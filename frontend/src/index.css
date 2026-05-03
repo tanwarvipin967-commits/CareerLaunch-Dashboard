@@ -1,0 +1,9 @@
+@import "tailwindcss"; /* Agar v4 hai toh */
+/* Ya fir v3 ke liye: */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
