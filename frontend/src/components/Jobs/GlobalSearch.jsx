@@ -11,33 +11,42 @@ const GlobalSearch = () => {
   // Ref for AbortController to cancel previous requests
   const abortControllerRef = useRef(null);
 
-  const fetchJobs = async (searchQuery) => {
+const fetchJobs = async (searchQuery) => {
     if (!searchQuery.trim()) {
       setAvailableJobs([]);
       return;
     }
 
-    // Cancel existing request if any
+    // 1. Sabse pehle purana data clear karo taaki purani jobs na dikhen
+    setAvailableJobs([]); 
+    
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     
-    // Create new controller
     abortControllerRef.current = new AbortController();
-
     setLoading(true);
+
     try {
+      // 2. API endpoint ko thoda clean rakhte hain
       const response = await fetch(
-        `https://www.arbeitnow.com/api/job-board-api?search=${searchQuery}`,
+        `https://www.arbeitnow.com/api/job-board-api?search=${encodeURIComponent(searchQuery)}`,
         { signal: abortControllerRef.current.signal }
       );
       const data = await response.json();
-      setAvailableJobs(data.data.slice(0, 10));
+
+      // 3. Check karo agar data hai tabhi set karo
+      if (data && data.data) {
+        setAvailableJobs(data.data.slice(0, 10));
+      } else {
+        setAvailableJobs([]);
+      }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('Previous request cancelled');
+        console.log('Cancelled');
       } else {
-        console.error("Error fetching jobs:", error);
+        console.error("Error:", error);
+        setAvailableJobs([]); // Error aane par bhi screen clear rakho
       }
     } finally {
       setLoading(false);
